@@ -443,7 +443,10 @@ class Ssx2012ObjectOperatorsMenu(bpy.types.Menu):
 
 
 def menu_func_import(self, context):
-    icon_id = SSX_ICONS["SSX2012"].icon_id
+    # 0 is Blender's "no icon" sentinel -- fall back to it instead of a
+    # KeyError if the icon failed to load (missing/corrupt PNG), since this
+    # draw callback runs every time the File menu opens, not just once.
+    icon_id = SSX_ICONS["SSX2012"].icon_id if SSX_ICONS and "SSX2012" in SSX_ICONS else 0
 
     self.layout.menu(
         Ssx2012ObjectOperatorsMenu.bl_idname,  # Referenced explicit bl_idname
@@ -462,17 +465,28 @@ classes = (
 
 
 def register():
-    # Setup custom icons first
+    # Setup custom icons first. Guard against double-registration (e.g. a
+    # stray register() call without a matching unregister()) leaking the
+    # previous preview collection, and don't let a broken icon (missing/
+    # corrupt PNG) block the actual import operators from registering --
+    # menu_func_import() already falls back to icon 0 ("no icon") if this
+    # collection ends up without "SSX2012" in it.
     global SSX_ICONS
-    SSX_ICONS = bpy.utils.previews.new()
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    icon_path = os.path.join(script_dir, "icons", "ssx2012.png")
+    if SSX_ICONS is not None:
+        bpy.utils.previews.remove(SSX_ICONS)
+        SSX_ICONS = None
 
-    # Check if the icon actually exists to prevent a crash
-    if os.path.exists(icon_path):
-        SSX_ICONS.load("SSX2012", icon_path, "IMAGE")
-    else:
-        print(f"Warning: Icon missing at {icon_path}")
+    try:
+        SSX_ICONS = bpy.utils.previews.new()
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        icon_path = os.path.join(script_dir, "icons", "ssx2012.png")
+
+        if os.path.exists(icon_path):
+            SSX_ICONS.load("SSX2012", icon_path, "IMAGE")
+        else:
+            print(f"Warning: Icon missing at {icon_path}")
+    except Exception as e:
+        print(f"Warning: failed to set up SSX2012 icon: {e}")
 
     for myclass in classes:
         bpy.utils.register_class(myclass)
