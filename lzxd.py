@@ -1,8 +1,13 @@
+# SPDX-License-Identifier: LGPL-2.1-only
+#
 # Pure-Python port of the LZX decompression algorithm implemented in
 # libmspack's mspack/lzxd.c, mspack/lzx.h, mspack/readbits.h and
 # mspack/readhuff.h -- (C) 2003-2023 Stuart Caie, licensed under the GNU
-# Lesser General Public License (LGPL) version 2.1. See
-# reference/libmspack/libmspack/COPYING.LIB for the full license text.
+# Lesser General Public License (LGPL) version 2.1. This file is a modified
+# (ported to Python) copy of that library and remains under LGPL-2.1; see
+# the LICENSE file at the repository root for the full license text, and
+# reference/libmspack/libmspack/COPYING.LIB (git submodule) for the
+# original upstream copy.
 #
 # The LZX method was created by Jonathan Forbes and Tomi Poutanen, adapted
 # by Microsoft Corporation. This port only implements standard (non-DELTA)

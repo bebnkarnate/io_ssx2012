@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-2.1-only
+#
 # Unpacker for EA's "chunklzx" container, used by several EA Sports Xbox 360
 # titles (FIFA, NHL, SSX 2012) to store LZX-compressed assets.
 #

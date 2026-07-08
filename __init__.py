@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-only
 bl_info = {
     "name": "SSX 2012 Importer",
     "author": "bebnkarnate",
@@ -388,11 +389,21 @@ class IMPORT_OT_ssx2012_geom(Operator, ImportHelper):
 
 class IMPORT_OT_gtf(Operator, ImportHelper):
     bl_idname = "import_scene.ssx2012_gtf"
-    bl_label = "Texture (.gtf/.xpr)"
+    bl_label = "Texture (.gtf/.xpr/.pvr)"
     bl_options = {"UNDO"}
 
     filename_ext = ""
-    filter_glob: StringProperty(default="*.gtf;*.xpr", options={"HIDDEN"}, maxlen=255)
+    filter_glob: StringProperty(default="*.gtf;*.xpr;*.pvr", options={"HIDDEN"}, maxlen=255)
+
+    def invoke(self, context, event):
+        # .pvr needs PVRTexToolCLI to decode; if it isn't installed, drop
+        # *.pvr from the file browser filter instead of offering a file type
+        # that would just fail with an error when picked.
+        from .pvr import find_pvrtextool_cli
+
+        if find_pvrtextool_cli() is None:
+            self.filter_glob = "*.gtf;*.xpr"
+        return super().invoke(context, event)
 
     def execute(self, context):
         name, ext = os.path.splitext(os.path.basename(self.filepath))
@@ -401,10 +412,21 @@ class IMPORT_OT_gtf(Operator, ImportHelper):
             from .gtf import load_gtf
 
             load_gtf(self.filepath)
-        if ext == ".xpr":
+        elif ext == ".xpr":
             from .xpr import load_xpr
 
             load_xpr(self.filepath)
+        elif ext == ".pvr":
+            from .pvr import load_pvr
+
+            try:
+                load_pvr(self.filepath)
+            except RuntimeError as e:
+                self.report({"ERROR"}, str(e))
+                return {"CANCELLED"}
+        else:
+            self.report({"ERROR"}, f"Unrecognized texture extension: {ext}")
+            return {"CANCELLED"}
 
         self.report({"INFO"}, f"Imported SSX 2012 texture: {name}")
         return {"FINISHED"}
@@ -439,7 +461,11 @@ class Ssx2012ObjectOperatorsMenu(bpy.types.Menu):
             IMPORT_OT_ssx2012_geom.bl_idname, text=IMPORT_OT_ssx2012_geom.bl_label
         )
         layout.operator(IMPORT_OT_crsf_rig.bl_idname, text=IMPORT_OT_crsf_rig.bl_label)
-        layout.operator(IMPORT_OT_gtf.bl_idname, text=IMPORT_OT_gtf.bl_label)
+
+        from .pvr import find_pvrtextool_cli
+
+        texture_label = "Texture (.gtf/.xpr/.pvr)" if find_pvrtextool_cli() else "Texture (.gtf/.xpr)"
+        layout.operator(IMPORT_OT_gtf.bl_idname, text=texture_label)
 
 
 def menu_func_import(self, context):
@@ -488,9 +514,21 @@ def register():
     except Exception as e:
         print(f"Warning: failed to set up SSX2012 icon: {e}")
 
+    # Idempotent class registration: a stray register() call without a
+    # matching unregister() first (e.g. during script-reload workflows)
+    # would otherwise raise ValueError on the first already-registered
+    # class and abort registration partway through.
     for myclass in classes:
+        try:
+            bpy.utils.unregister_class(myclass)
+        except (RuntimeError, ValueError):
+            pass
         bpy.utils.register_class(myclass)
 
+    try:
+        bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+    except ValueError:
+        pass
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 
