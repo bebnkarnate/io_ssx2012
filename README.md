@@ -1,6 +1,6 @@
 # SSX 2012 Importer
 
-A Blender addon for importing assets from **SSX** (2012, EA Sports, Xbox 360/mobile). It reads the game's proprietary `.geom`, `.crsf`, `.gtf`, and `.xpr` formats directly and reconstructs meshes, skin weights, skeletons, and textures inside Blender.
+A Blender addon for importing assets from **SSX** (2012, EA Sports, Android/PS3/Xbox 360). It reads the game's proprietary `.geom`, `.crsf`, `.gtf`, and `.xpr` formats directly and reconstructs meshes, skin weights, skeletons, and textures inside Blender.
 
 ## What it imports
 
