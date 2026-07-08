@@ -6,7 +6,7 @@ A Blender addon for importing assets from **SSX** (2012, EA Sports, Android/PS3/
 
 - **Geometry + weights (`.geom` / `.crsf`)** — `File > Import > SSX (2012) > Geometry + Weights`. Reads a `.geom` mesh (positions, normals, UVs, triangle indices) and its matching `_meshpoly.crsf` file (per-vertex bone weights and bone names), builds the mesh, and assigns vertex groups.
 - **Rig / Skeleton (`.crsf`)** — `File > Import > SSX (2012) > Rig / Skeleton`. Parses the skeleton's scene graph (`SGRF`) section, reconstructs the joint hierarchy and bind-pose transforms, and builds a Blender armature with correct bone positions, parenting, and roll — then parents the active mesh to it with an Armature modifier.
-- **Textures (`.gtf` / `.xpr`)** — `File > Import > SSX (2012) > Texture`. Converts the console-native DXT1/DXT5 texture containers into a DDS Blender can load directly.
+- **Textures (`.gtf` / `.xpr`)** — `File > Import > SSX (2012) > Texture`. Converts platform-native DXT1/DXT5 texture containers into a DDS Blender can load directly: `.gtf` is PS3's texture format (`gtf.py`), `.xpr` is the Xbox family's "packed resource" texture format (`xpr.py`) — two different platform-specific containers handled side by side, not one shared format.
 
 ## Format notes
 
